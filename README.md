@@ -1,6 +1,6 @@
 # 🎮 fg-RustServerStart.BAT - Tam Otomatik Rust Sunucu Scripti
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
+[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -239,12 +239,112 @@ Tags, Rust sunucu tarayıcısında oyuncuların sunucunuzu bulmasını sağlayan
 | `AUTO_UPDATE` | 1 | Her açılışta SteamCMD üzerinden Rust güncellemesini kontrol eder. |
 | `ENABLE_UMOD` | 0 | 1 yapılırsa Oxide (uMod) eklenti sistemini otomatik kurar ve günceller. |
 
+<details>
+<summary><strong>📂 Dizin Yolları Nasıl Değiştirilir?</strong></summary>
+
+#### 🔑 `%~dp0` Ne Demek?
+
+`%~dp0`, BAT dosyasının **kendi bulunduğu klasörün tam yolunu** ifade eder. Örneğin script `C:\RustSunucu\` klasöründeyse:
+
+| Değişken | Varsayılan Sonuç | Ne İşe Yarar? |
+|---|---|---|
+| `STEAMCMD_DIR` | `C:\RustSunucu\steamcmd` | SteamCMD dosyaları buraya iner |
+| `SERVER_DIR` | `C:\RustSunucu\server` | Rust sunucu dosyaları buraya kurulur |
+| `LOG_DIR` | `C:\RustSunucu\logs` | Çökme logları buraya kaydedilir |
+
+#### ✏️ Değiştirme Örnekleri
+
+**1) Başka bir diske taşımak isterseniz** (örneğin D sürücüsüne):
+
+```bat
+set "STEAMCMD_DIR=D:\RustServer\steamcmd"
+set "SERVER_DIR=D:\RustServer\server"
+set "LOG_DIR=D:\RustServer\logs"
+```
+
+**2) BAT dosyasının yanında kalsın ama klasör adını değiştirmek isterseniz:**
+
+```bat
+set "STEAMCMD_DIR=%~dp0steam"
+set "SERVER_DIR=%~dp0rust_dosyalar"
+set "LOG_DIR=%~dp0kayitlar"
+```
+
+**3) Tamamen farklı yollara taşımak isterseniz:**
+
+```bat
+set "STEAMCMD_DIR=C:\OyunAraclari\steamcmd"
+set "SERVER_DIR=D:\Sunucular\Rust"
+set "LOG_DIR=D:\Sunucular\Rust_Loglari"
+```
+
+> ⚠️ **Dikkat Edilmesi Gerekenler:**
+> - Tırnak işaretlerini (`"`) silmeyin → `set "DEGISKEN=deger"` formatında kalmalıdır.
+> - Yol ayracı olarak ters eğik çizgi (`\`) kullanın, düz eğik çizgi (`/`) değil.
+> - Boşluk içeren yollar sorun çıkarmaz çünkü değer tırnak içinde tanımlanır.
+> - Klasörü kendiniz oluşturmanıza gerek yoktur; script çalıştırıldığında otomatik oluşturulur.
+
+</details>
+
 ### 1.11 Crash & Yeniden Başlatma Ayarları
 | Parametre | Varsayılan Değer | Açıklama |
 |-----------|------------------|----------|
 | `CRASH_RESTART` | 1 | Sunucu beklenmedik şekilde çökerse otomatik yeniden başlatmayı açar. |
 | `CRASH_WAIT_SECONDS` | 30 | Çöktükten sonra yeniden başlatmak için beklenecek süre. (sn) |
 | `MAX_CRASH_RESTARTS` | 5 | Sonsuz döngüyü önlemek için maksimum ardışık yeniden başlatma denemesi. |
+
+### 1.12 Yönetici & Yetki Ayarları
+| Parametre | Varsayılan Değer | Açıklama |
+|-----------|------------------|----------|
+| `SERVER_OWNERS` | "" | Sunucu sahibi (Owner) olarak atanacak Steam64ID'ler. Virgülle ayrılır. |
+| `SERVER_MODERATORS` | "" | Moderatör olarak atanacak Steam64ID'ler. Virgülle ayrılır. |
+
+<details>
+<summary><strong>👑 Yönetici & Yetki Ayarları Nasıl Kullanılır?</strong></summary>
+
+#### 🔑 Steam64ID Nasıl Bulunur?
+
+1. Steam istemcisini açın.
+2. Sağ üst köşeden profil adınıza tıklayın → **Hesap ayrıntıları**.
+3. Sayfanın alt kısmında **Steam ID** yazan 17 haneli numara sizin Steam64ID'nizdir.
+
+Alternatif olarak [steamid.io](https://steamid.io/) sitesinden Steam profil URL'nizi yapıştırarak da bulabilirsiniz.
+
+#### ✏️ Örnek Kullanımlar
+
+**Tek sahip ekleme:**
+
+```bat
+set "SERVER_OWNERS=76561198000000001"
+```
+
+**Birden fazla sahip ekleme** (virgülle ayırın):
+
+```bat
+set "SERVER_OWNERS=76561198000000001,76561198000000002"
+```
+
+**Sahip ve moderatör birlikte ekleme:**
+
+```bat
+set "SERVER_OWNERS=76561198000000001"
+set "SERVER_MODERATORS=76561198000000003,76561198000000004"
+```
+
+#### 📋 Yetki Seviyeleri
+
+| Yetki | Komut | Açıklama |
+|-------|-------|----------|
+| **Owner (Sahip)** | `ownerid` | Tam yönetici yetkisi. Tüm konsol komutlarını kullanabilir, kick/ban yapabilir, F1 menüsünde tüm admin araçlarına erişir. |
+| **Moderator (Moderatör)** | `moderatorid` | Sınırlı yönetici yetkisi. Kick/ban yapabilir ancak bazı gelişmiş komutlara erişemez. |
+
+> ⚠️ **Önemli Notlar:**
+> - En az bir `SERVER_OWNERS` değeri girmeniz önerilir; aksi takdirde sunucunuzda yönetici yetkisi olan kimse olmaz.
+> - Steam64ID 17 haneli olmalıdır. Yanlış ID girerseniz ilgili oyuncuya yetki atanmaz.
+> - Yetkiler her sunucu başlatmada `server.cfg` dosyasına otomatik yazılır, manuel düzenlemenize gerek yoktur.
+> - `SERVER_OWNERS` ve `SERVER_MODERATORS` boş bırakılırsa (`""`) bu satırlar `server.cfg`'ye eklenmez.
+
+</details>
 
 ---
 

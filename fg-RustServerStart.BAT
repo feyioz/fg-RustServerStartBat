@@ -4,7 +4,7 @@ setlocal EnableDelayedExpansion
 :: ========================================================================
 :: fg-RustServerStart.BAT
 :: Tam Otomatik Rust Dedicated Server Scripti
-:: Versiyon: 1.0.0
+:: Versiyon: 1.3.0
 :: ========================================================================
 
 :: ========================================================================
@@ -103,6 +103,11 @@ set "ENABLE_UMOD=0"
 set "CRASH_RESTART=1"
 set "CRASH_WAIT_SECONDS=30"
 set "MAX_CRASH_RESTARTS=5"
+
+:: --- 1.12 Yönetici & Yetki Ayarları ---
+:: Birden fazla Steam64ID eklemek için virgülle ayırın. Örnek: "76561198000000001,76561198000000002"
+set "SERVER_OWNERS="
+set "SERVER_MODERATORS="
 
 :: ========================================================================
 :: [2] EKRAN & RENK AYARLARI
@@ -242,6 +247,20 @@ echo codelock.maxfailedattempts %CODELOCK_MAXFAILEDATTEMPTS% >> "%CFG_FILE%"
 if not "%GC_INTERVAL%"=="" echo gc.interval %GC_INTERVAL% >> "%CFG_FILE%"
 if not "%GC_BUFFERCOUNT%"=="" echo gc.buffercount %GC_BUFFERCOUNT% >> "%CFG_FILE%"
 if not "%ENTITYBATCHSIZE%"=="" echo entitybatchsize %ENTITYBATCHSIZE% >> "%CFG_FILE%"
+
+:: Owner (Sahip) yetkilerini ekleme
+if not "%SERVER_OWNERS%"=="" (
+    for %%O in (%SERVER_OWNERS%) do (
+        echo ownerid %%O >> "%CFG_FILE%"
+    )
+)
+
+:: Moderator yetkilerini ekleme
+if not "%SERVER_MODERATORS%"=="" (
+    for %%M in (%SERVER_MODERATORS%) do (
+        echo moderatorid %%M >> "%CFG_FILE%"
+    )
+)
 
 echo [+] server.cfg basariyla yazildi.
 echo.
