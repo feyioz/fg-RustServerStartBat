@@ -4,7 +4,7 @@ setlocal EnableDelayedExpansion
 :: ========================================================================
 :: fg-RustServerStart.BAT
 :: Tam Otomatik Rust Dedicated Server Scripti
-:: Versiyon: 1.3.0
+:: Versiyon: 1.3.1
 :: ========================================================================
 
 :: ========================================================================
@@ -130,7 +130,7 @@ if %errorLevel% == 0 (
     echo [+] Yonetici yetkileri basariyla dogrulandi.
 ) else (
     echo [-] Yonetici yetkisi bulunamadi! UAC istegi gonderiliyor...
-    powershell -Command "Start-Process cmd -ArgumentList '/c %~dpnx0' -Verb RunAs"
+    powershell -Command "Start-Process cmd -ArgumentList '/k \"\"%~dpnx0\"\"' -Verb RunAs"
     exit /b
 )
 echo.
@@ -167,7 +167,9 @@ if "%AUTO_UPDATE%"=="1" (
     echo [*] Rust Dedicated Server guncelleniyor/kuruluyor...
     "%STEAMCMD_DIR%\steamcmd.exe" +force_install_dir "%SERVER_DIR%" +login anonymous +app_update 258550 -beta %SERVER_BRANCH% validate +quit
     if !errorLevel! neq 0 (
-        echo [-] SteamCMD guncelleme sirasinda bir hata olustu. 
+        echo [-] SteamCMD guncelleme sirasinda bir hata olustu.
+        echo [-] Lutfen internet baglantinizi ve SERVER_BRANCH ayarini kontrol edin.
+        pause
     ) else (
         echo [+] Rust Server guncellemesi basarili.
     )
@@ -311,14 +313,21 @@ if not "%SERVER_FPSLIMIT%"=="" set "START_PARAMS=%START_PARAMS% +server.fps %SER
 set "START_PARAMS=%START_PARAMS% +global.maxthreads %GLOBAL_MAXTHREADS%"
 
 :START_SERVER
-:: Log dosyasini tarih-saat formatli isimlendirme
-for /f "tokens=2-4 delims=/.- " %%a in ("%DATE%") do set "DT=%%c-%%a-%%b"
-for /f "tokens=1-2 delims=/: " %%a in ("%TIME%") do set "TM=%%a%%b"
-set "LOG_FILE=%LOG_DIR%\server_%DT%_%TM%.log"
+:: Log dosyasini tarih-saat formatli isimlendirme (locale-bagimsiz)
+for /f "tokens=2 delims==" %%a in ('wmic os get localdatetime /value 2^>nul') do set "DT=%%a"
+set "LOG_FILE=%LOG_DIR%\server_%DT:~0,4%-%DT:~4,2%-%DT:~6,2%_%DT:~8,2%%DT:~10,2%.log"
 set "START_PARAMS_FULL=%START_PARAMS% -logfile "%LOG_FILE%""
 
 echo [*] Sunucu baslatiliyor... (%CRASH_COUNT% / %MAX_CRASH_RESTARTS% crash denemesi)
 cd /d "%SERVER_DIR%"
+
+if not exist "%SERVER_DIR%\RustDedicated.exe" (
+    echo [-] HATA: RustDedicated.exe bulunamadi! SteamCMD kurulumu basarisiz olmus olabilir.
+    echo [-] Lutfen internet baglantinizi ve SERVER_BRANCH ayarini kontrol edin.
+    pause
+    exit /b 1
+)
+
 RustDedicated.exe %START_PARAMS_FULL%
 
 echo.
@@ -331,6 +340,7 @@ if "%CRASH_RESTART%"=="1" (
         goto START_SERVER
     ) else (
         echo [-] Maksimum crash yeniden baslatma sayisina ulasildi! Lutfen loglari kontrol edin.
+        pause
     )
 )
 

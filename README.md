@@ -1,6 +1,6 @@
 # 🎮 fg-RustServerStart.BAT - Tam Otomatik Rust Sunucu Scripti
 
-[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
+[![Version](https://img.shields.io/badge/version-1.3.1-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
