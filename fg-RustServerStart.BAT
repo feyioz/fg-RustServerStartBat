@@ -1,10 +1,23 @@
 @echo off
 setlocal EnableDelayedExpansion
 
+if /I "%~1"=="__FG_RUN__" goto MAIN
+"%ComSpec%" /v:on /c call "%~f0" __FG_RUN__
+set "FG_EXIT_CODE=!ERRORLEVEL!"
+echo.
+if not "!FG_EXIT_CODE!"=="0" (
+    echo [!] Script hata kodu !FG_EXIT_CODE! ile durdu. Yukaridaki hata mesajlarini kontrol edin.
+)
+echo [*] Konsol penceresi otomatik kapanmayacak.
+pause
+exit /b !FG_EXIT_CODE!
+
+:MAIN
+
 :: ========================================================================
 :: fg-RustServerStart.BAT
 :: Tam Otomatik Rust Dedicated Server Scripti
-:: Versiyon: 1.4.1
+:: Versiyon: 1.4.4
 :: ========================================================================
 
 :: ========================================================================
@@ -222,15 +235,61 @@ echo.
 :: ========================================================================
 :: [9] FIREWALL KURALLARI
 :: ========================================================================
-echo [*] Windows Firewall kurallari uygulaniyor...
-netsh advfirewall firewall show rule name="fg-RustServer - Port %SERVER_PORT% UDP" >nul
+echo [*] Windows Firewall kurallari kontrol ediliyor...
+netsh advfirewall firewall show rule name="fg-RustServer - Port %SERVER_PORT% UDP" >nul 2>&1
 if errorlevel 1 (
-    netsh advfirewall firewall add rule name="fg-RustServer - Port %SERVER_PORT% UDP" dir=in action=allow protocol=UDP localport=%SERVER_PORT%
-    netsh advfirewall firewall add rule name="fg-RustServer - Port %RCON_PORT% TCP" dir=in action=allow protocol=TCP localport=%RCON_PORT%
-    netsh advfirewall firewall add rule name="fg-RustServer - Port %APP_PORT% TCP" dir=in action=allow protocol=TCP localport=%APP_PORT%
-    echo [+] Firewall kurallari eklendi.
+    netsh advfirewall firewall add rule name="fg-RustServer - Port %SERVER_PORT% UDP" dir=in action=allow protocol=UDP localport=%SERVER_PORT% >nul 2>&1
+    if errorlevel 1 (
+        echo [-] HATA: Firewall kurali eklenemedi: UDP %SERVER_PORT%
+        echo [-] Windows Defender Firewall servisini ve yonetici yetkisini kontrol edin.
+        exit /b 1
+    )
+    echo [+] Firewall kurali eklendi: UDP %SERVER_PORT%
 ) else (
-    echo [+] Firewall kurallari zaten mevcut.
+    echo [+] Firewall kurali zaten mevcut: UDP %SERVER_PORT%
+)
+
+netsh advfirewall firewall show rule name="fg-RustServer - Port %RCON_PORT% TCP" >nul 2>&1
+if errorlevel 1 (
+    netsh advfirewall firewall add rule name="fg-RustServer - Port %RCON_PORT% TCP" dir=in action=allow protocol=TCP localport=%RCON_PORT% >nul 2>&1
+    if errorlevel 1 (
+        echo [-] HATA: Firewall kurali eklenemedi: TCP %RCON_PORT%
+        echo [-] Windows Defender Firewall servisini ve yonetici yetkisini kontrol edin.
+        exit /b 1
+    )
+    echo [+] Firewall kurali eklendi: TCP %RCON_PORT%
+) else (
+    echo [+] Firewall kurali zaten mevcut: TCP %RCON_PORT%
+)
+
+if "%RUSTPLUS_ENABLED%"=="1" (
+    netsh advfirewall firewall show rule name="fg-RustServer - Port %APP_PORT% TCP" >nul 2>&1
+    if errorlevel 1 (
+        netsh advfirewall firewall add rule name="fg-RustServer - Port %APP_PORT% TCP" dir=in action=allow protocol=TCP localport=%APP_PORT% >nul 2>&1
+        if errorlevel 1 (
+            echo [-] HATA: Firewall kurali eklenemedi: TCP %APP_PORT%
+            echo [-] Windows Defender Firewall servisini ve yonetici yetkisini kontrol edin.
+            exit /b 1
+        )
+        echo [+] Firewall kurali eklendi: TCP %APP_PORT%
+    ) else (
+        echo [+] Firewall kurali zaten mevcut: TCP %APP_PORT%
+    )
+)
+
+if not "%SERVER_QUERYPORT%"=="" (
+    netsh advfirewall firewall show rule name="fg-RustServer - Port %SERVER_QUERYPORT% UDP" >nul 2>&1
+    if errorlevel 1 (
+        netsh advfirewall firewall add rule name="fg-RustServer - Port %SERVER_QUERYPORT% UDP" dir=in action=allow protocol=UDP localport=%SERVER_QUERYPORT% >nul 2>&1
+        if errorlevel 1 (
+            echo [-] HATA: Firewall kurali eklenemedi: UDP %SERVER_QUERYPORT%
+            echo [-] Windows Defender Firewall servisini ve yonetici yetkisini kontrol edin.
+            exit /b 1
+        )
+        echo [+] Firewall kurali eklendi: UDP %SERVER_QUERYPORT%
+    ) else (
+        echo [+] Firewall kurali zaten mevcut: UDP %SERVER_QUERYPORT%
+    )
 )
 echo.
 
@@ -277,15 +336,15 @@ if not "%GC_BUFFERCOUNT%"=="" echo gc.buffercount %GC_BUFFERCOUNT% >> "%CFG_FILE
 if not "%ENTITYBATCHSIZE%"=="" echo entitybatchsize %ENTITYBATCHSIZE% >> "%CFG_FILE%"
 
 :: Owner (Sahip) yetkilerini ekleme
-if not "%SERVER_OWNERS%"=="" (
-    for %%O in (%SERVER_OWNERS%) do (
+if not "!SERVER_OWNERS!"=="" (
+    for %%O in (!SERVER_OWNERS!) do (
         echo ownerid %%O >> "%CFG_FILE%"
     )
 )
 
 :: Moderator yetkilerini ekleme
-if not "%SERVER_MODERATORS%"=="" (
-    for %%M in (%SERVER_MODERATORS%) do (
+if not "!SERVER_MODERATORS!"=="" (
+    for %%M in (!SERVER_MODERATORS!) do (
         echo moderatorid %%M >> "%CFG_FILE%"
     )
 )
@@ -307,42 +366,42 @@ if "%SERVER_SEED%"=="auto" (
 
 :: Parametreleri Hazirlama
 set "START_PARAMS=-batchmode -nographics -silent-crashes"
-set "START_PARAMS=%START_PARAMS% +server.ip %SERVER_IP% +server.port %SERVER_PORT%"
-set "START_PARAMS=%START_PARAMS% +server.identity "%SERVER_IDENTITY%""
-set "START_PARAMS=%START_PARAMS% +server.hostname "%SERVER_HOSTNAME%""
-set "START_PARAMS=%START_PARAMS% +server.description "%SERVER_DESCRIPTION%""
-set "START_PARAMS=%START_PARAMS% +server.url "%SERVER_URL%""
-set "START_PARAMS=%START_PARAMS% +server.headerimage "%SERVER_HEADERIMAGE%""
-set "START_PARAMS=%START_PARAMS% +server.maxplayers %SERVER_MAXPLAYERS%"
+set "START_PARAMS=!START_PARAMS! +server.ip !SERVER_IP! +server.port !SERVER_PORT!"
+set "START_PARAMS=!START_PARAMS! +server.identity "!SERVER_IDENTITY!""
+set "START_PARAMS=!START_PARAMS! +server.hostname "!SERVER_HOSTNAME!""
+set "START_PARAMS=!START_PARAMS! +server.description "!SERVER_DESCRIPTION!""
+set "START_PARAMS=!START_PARAMS! +server.url "!SERVER_URL!""
+set "START_PARAMS=!START_PARAMS! +server.headerimage "!SERVER_HEADERIMAGE!""
+set "START_PARAMS=!START_PARAMS! +server.maxplayers !SERVER_MAXPLAYERS!"
 
-if "%SERVER_LEVELURL%"=="" (
-    set "START_PARAMS=%START_PARAMS% +server.seed %SEED_VALUE% +server.worldsize %SERVER_WORLDSIZE% +server.level "%SERVER_LEVEL%""
+if "!SERVER_LEVELURL!"=="" (
+    set "START_PARAMS=!START_PARAMS! +server.seed !SEED_VALUE! +server.worldsize !SERVER_WORLDSIZE! +server.level "!SERVER_LEVEL!""
 ) else (
-    set "START_PARAMS=%START_PARAMS% +server.levelurl "%SERVER_LEVELURL%""
+    set "START_PARAMS=!START_PARAMS! +server.levelurl "!SERVER_LEVELURL!""
 )
 
-set "START_PARAMS=%START_PARAMS% +server.saveinterval %SERVER_SAVEINTERVAL% +server.tickrate %SERVER_TICKRATE%"
-set "START_PARAMS=%START_PARAMS% +server.secure %SERVER_SECURE% +server.eac %SERVER_EAC% +server.encryption %SERVER_ENCRYPTION% +server.stability %SERVER_STABILITY%"
-set "START_PARAMS=%START_PARAMS% +server.tags "%SERVER_TAGS%""
-set "START_PARAMS=%START_PARAMS% +rcon.ip %RCON_IP% +rcon.port %RCON_PORT% +rcon.password "%RCON_PASSWORD%" +rcon.web %RCON_WEB%"
+set "START_PARAMS=!START_PARAMS! +server.saveinterval !SERVER_SAVEINTERVAL! +server.tickrate !SERVER_TICKRATE!"
+set "START_PARAMS=!START_PARAMS! +server.secure !SERVER_SECURE! +server.eac !SERVER_EAC! +server.encryption !SERVER_ENCRYPTION! +server.stability !SERVER_STABILITY!"
+set "START_PARAMS=!START_PARAMS! +server.tags "!SERVER_TAGS!""
+set "START_PARAMS=!START_PARAMS! +rcon.ip !RCON_IP! +rcon.port !RCON_PORT! +rcon.password "!RCON_PASSWORD!" +rcon.web !RCON_WEB!"
 
-if "%RUSTPLUS_ENABLED%"=="1" (
-    set "START_PARAMS=%START_PARAMS% +app.port %APP_PORT%"
-    if not "%APP_LISTENIP%"=="" set "START_PARAMS=%START_PARAMS% +app.listenip %APP_LISTENIP%"
-    if not "%APP_PUBLICIP%"=="" set "START_PARAMS=%START_PARAMS% +app.publicip %APP_PUBLICIP%"
+if "!RUSTPLUS_ENABLED!"=="1" (
+    set "START_PARAMS=!START_PARAMS! +app.port !APP_PORT!"
+    if not "!APP_LISTENIP!"=="" set "START_PARAMS=!START_PARAMS! +app.listenip !APP_LISTENIP!"
+    if not "!APP_PUBLICIP!"=="" set "START_PARAMS=!START_PARAMS! +app.publicip !APP_PUBLICIP!"
 ) else (
-    set "START_PARAMS=%START_PARAMS% +app.port 1-"
+    set "START_PARAMS=!START_PARAMS! +app.port 1-"
 )
 
-if not "%SERVER_QUERYPORT%"=="" set "START_PARAMS=%START_PARAMS% +server.queryport %SERVER_QUERYPORT%"
-if not "%SERVER_FPSLIMIT%"=="" set "START_PARAMS=%START_PARAMS% +server.fps %SERVER_FPSLIMIT%"
-set "START_PARAMS=%START_PARAMS% +global.maxthreads %GLOBAL_MAXTHREADS%"
+if not "!SERVER_QUERYPORT!"=="" set "START_PARAMS=!START_PARAMS! +server.queryport !SERVER_QUERYPORT!"
+if not "!SERVER_FPSLIMIT!"=="" set "START_PARAMS=!START_PARAMS! +server.fps !SERVER_FPSLIMIT!"
+set "START_PARAMS=!START_PARAMS! +global.maxthreads !GLOBAL_MAXTHREADS!"
 
 :START_SERVER
 :: Log dosyasini tarih-saat formatli isimlendirme (locale-bagimsiz)
 for /f "tokens=2 delims==" %%a in ('wmic os get localdatetime /value 2^>nul') do set "DT=%%a"
 set "LOG_FILE=%LOG_DIR%\server_%DT:~0,4%-%DT:~4,2%-%DT:~6,2%_%DT:~8,2%%DT:~10,2%.log"
-set "START_PARAMS_FULL=%START_PARAMS% -logfile "%LOG_FILE%""
+set "START_PARAMS_FULL=!START_PARAMS! -logfile "!LOG_FILE!""
 
 echo [*] Sunucu baslatiliyor... (%CRASH_COUNT% / %MAX_CRASH_RESTARTS% crash denemesi)
 cd /d "%SERVER_DIR%"
@@ -354,7 +413,9 @@ if not exist "%SERVER_DIR%\RustDedicated.exe" (
     exit /b 1
 )
 
+setlocal DisableDelayedExpansion
 RustDedicated.exe %START_PARAMS_FULL%
+endlocal
 
 echo.
 echo [!] Sunucu kapandi.

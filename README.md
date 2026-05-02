@@ -1,6 +1,6 @@
-# 🎮 fg-RustServerStart.BAT - Tam Otomatik Rust Sunucu Scripti
+﻿# 🎮 fg-RustServerStart.BAT - Tam Otomatik Rust Sunucu Scripti
 
-[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
+[![Version](https://img.shields.io/badge/version-1.4.4-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -368,6 +368,27 @@ Projeyi başlatmak ve test etmek için:
 
 ---
 
+## 🧯 Sorun Giderme
+
+### Konsol firewall mesajından sonra hemen kapanırsa
+
+v1.4.4 ile script artık kendini güvenli bir dış çalıştırıcı üzerinden başlatır. Bu sayede Windows Server 2022 üzerinde firewall kuralı, `server.cfg` üretimi veya başlatma parametrelerinde hata oluşsa bile konsol penceresi otomatik kapanmaz; hata kodu ve ilgili mesaj ekranda kalır.
+
+Firewall tarafında her port ayrı ayrı kontrol edilir:
+
+- Oyun portu: `SERVER_PORT` / UDP
+- RCON portu: `RCON_PORT` / TCP
+- Rust+ açıksa: `APP_PORT` / TCP
+- Tanımlıysa Steam sorgu portu: `SERVER_QUERYPORT` / UDP
+
+Bir firewall kuralı eklenemezse script artık sessizce kapanmak yerine hangi portta hata olduğunu gösterir. Bu durumda scripti **Yönetici olarak** çalıştırın ve Windows Defender Firewall servisinin açık olduğundan emin olun. 🛡️
+
+### `'Vanilla+' is not recognized` hatası
+
+Bu hata, sunucu adı/açıklaması/tag gibi başlatma parametrelerinde `|`, `&`, `!` gibi Windows CMD özel karakterleri geçtiğinde oluşur. v1.4.4 ile başlatma parametreleri güvenli biçimde hazırlanır ve `RustDedicated.exe` çalıştırılırken gecikmeli değişken genişletme kapatılır. Böylece `Vanilla+ | Monthly` gibi değerler komut olarak algılanmaz.
+
+---
+
 ## 📁 Dosya Yapısı
 
 Kurulum ve ilk çalıştırma sonrasında proje dizin organizasyonu şu şekilde olacaktır:
@@ -422,6 +443,9 @@ Sunucu yönetimi, komutlar ve eklentiler hakkında daha fazla bilgi için aşağ
 
 ## 🔄 Versiyon Geçmişi
 
+- **v1.4.4:** `Vanilla+ | ...` gibi özel karakter içeren sunucu adı/tag değerlerinin CMD tarafından komut sanılmasına neden olan başlatma parametresi hatası düzeltildi.
+- **v1.4.3:** Windows Server 2022'de firewall adımından sonra konsolun aniden kapanmasını engelleyen güvenli dış çalıştırıcı eklendi; firewall kuralları port bazlı doğrulama ve açık hata mesajlarıyla güçlendirildi.
+- **v1.4.2:** Firewall ayarlarından hemen sonra boş Owner/Moderator listesi kontrolünde yaşanan syntax hatası (script'in aniden kapanması) çözüldü.
 - **v1.4.1:** SteamCMD'nin "CWorkThreadPool" hatası fırlatması ve scriptin aniden kapanması sorunu düzeltildi. 3 aşamalı indirme döngüsü (retry mekanizması) eklendi.
 - **v1.4.0:** Gelişmiş sunucu ayarları eklendi.
 
