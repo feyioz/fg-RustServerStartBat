@@ -1,6 +1,6 @@
 # 🎮 fg-RustServerStart.BAT - Tam Otomatik Rust Sunucu Scripti
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -72,7 +72,78 @@ Bu projede kullanılan ana kütüphane, framework ve araçlar:
 | `SERVER_WORLDSIZE` | 4000 | Harita boyutu. (1000-6000 arası) |
 | `SERVER_LEVEL` | "Procedural Map" | Harita türü. (Procedural Map, Barren, SavasIsland vb.) |
 | `SERVER_LEVELURL` | "" | Özel (Custom) harita kullanılacaksa .map dosyasının URL'si. |
-| `SERVER_TAGS` | "monthly,vanilla,EU" | Sunucu etiketleri. Oyun içi aramada çıkmayı sağlar. |
+| `SERVER_TAGS` | "monthly,vanilla,EU" | Sunucu etiketleri. Oyun içi aramada çıkmayı sağlar. (Maks. 4 tag, virgülle ayrılır) |
+
+<details>
+<summary><strong>🏷️ SERVER_TAGS - Tüm Kullanılabilir Etiketler Listesi</strong></summary>
+
+Tags, Rust sunucu tarayıcısında oyuncuların sunucunuzu bulmasını sağlayan ek bilgi parçalarıdır. Sunucu tarayıcısında aynı anda en fazla **4 tag** görüntülenir.
+
+> **Örnek Kullanım:** `SERVER_TAGS` değişkenine değer olarak tag'lerin **Value** (değer) sütunundaki isimleri virgülle ayırarak yazın.
+> Örnek: `"monthly,vanilla,roleplay,EU"`
+
+---
+
+#### 🗓️ Wipe Sıklığı Tag'leri (Grup - sadece 1 tanesi seçilebilir)
+
+| Value | Görünen Ad | Açıklama |
+|-------|------------|----------|
+| `monthly` | Monthly | Ayda bir wipe yapılan sunucular için. |
+| `biweekly` | Biweekly | İki haftada bir wipe yapılan sunucular için. |
+| `weekly` | Weekly | Haftada bir wipe yapılan sunucular için. |
+
+#### ⚔️ Zorluk Tag'leri (Grup - sadece 1 tanesi seçilebilir)
+
+| Value | Görünen Ad | Açıklama |
+|-------|------------|----------|
+| `vanilla` | Vanilla | Eklenti (plugin) kullanılmayan, varsayılan ayarlarda oynanan sunucular. |
+| `hardcore` | Hardcore | Hardcore oyun modu aktif sunucular. |
+| `softcore` | Softcore | Softcore oyun modu aktif sunucular. Daha kolay oynanış, güvenli bölge vb. |
+
+#### 🌍 Bölge Tag'leri (Grup - sadece 1 tanesi seçilebilir)
+
+| Value | Görünen Ad | Açıklama |
+|-------|------------|----------|
+| `NA` | North America | Kuzey Amerika bölgesi. |
+| `SA` | South America | Güney Amerika bölgesi. |
+| `EU` | Europe | Avrupa bölgesi. |
+| `WA` | West Asia | Batı Asya / Orta Doğu bölgesi. |
+| `EA` | East Asia | Doğu Asya bölgesi. |
+| `OC` | Oceania | Avustralya ve Okyanusya bölgesi. |
+| `AF` | Africa | Afrika bölgesi. |
+
+#### 🎮 Oynanış Tag'leri (Grupsuz - istediğiniz kadar seçebilirsiniz)
+
+| Value | Görünen Ad | Açıklama |
+|-------|------------|----------|
+| `pve` | PvE | Oyuncular birbirine hasar veremez. Sadece çevre ve NPC'lere karşı oynanır. |
+| `roleplay` | Roleplay | Rol yapma odaklı özel tasarlanmış sunucular. |
+| `creative` | Creative | Hayatta kalma özellikleri kapalı, serbest yapım sunucuları. |
+| `minigame` | Minigame | Özel ve benzersiz oyun modları sunan sunucular. |
+| `training` | Combat Training | Nişancılık ve savaş eğitimi için tasarlanmış sunucular. |
+| `battlefield` | Battlefield | PVP odaklı modlu sunucular. |
+| `broyale` | Battle Royale | Son adam kalan kazanır tarzı battle-royale sunucuları. |
+| `builds` | Build Server | Sadece üs (base) yapımına ayrılmış özel sunucular. |
+| `tut` | Tutorial | Yeni oyuncular için eğitim amaçlı sunucular. |
+| `premium` | Premium | Ücretli/premium özellikler sunan sunucular. |
+
+#### 🔧 Modlama Framework Tag'leri (Otomatik atanır)
+
+| Görünen Ad | Açıklama |
+|------------|----------|
+| Modded | Sunucuda herhangi bir modlama varsa otomatik atanır. |
+| Oxide | uMod/Oxide framework kuruluysa otomatik atanır. |
+| Carbon | Carbon framework kuruluysa otomatik atanır. |
+
+> ⚠️ **Önemli Notlar:**
+> - Her gruptan (Wipe Sıklığı, Zorluk, Bölge) **sadece 1 tag** seçebilirsiniz. Aynı gruptan birden fazla seçmek çakışmaya neden olur.
+> - Oynanış tag'lerinde böyle bir kısıtlama yoktur, birden fazla seçebilirsiniz.
+> - Modlama framework tag'leri (`Modded`, `Oxide`, `Carbon`) otomatik atanır, manuel eklemenize gerek yoktur.
+> - Eğer uMod/Oxide kullanıyorsanız sunucunuz otomatik olarak "modded" kategorisinde listelenir; `vanilla` tag'i artık gösterilmez.
+> - Maksimum **4 tag** sunucu tarayıcısında görünür.
+> - Kaynak: [Facepunch Resmi Wiki - Server Browser Tags](https://wiki.facepunch.com/rust/server-browser-tags)
+
+</details>
 
 ### 1.2 Ağ Ayarları
 | Parametre | Varsayılan Değer | Açıklama |
