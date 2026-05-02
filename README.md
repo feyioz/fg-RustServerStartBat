@@ -1,6 +1,6 @@
 # 🎮 fg-RustServerStart.BAT - Tam Otomatik Rust Sunucu Scripti
 
-[![Version](https://img.shields.io/badge/version-1.3.1-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
+[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -43,6 +43,8 @@ Bu projede kullanılan ana kütüphane, framework ve araçlar:
 | **Bellek (RAM)** | 8 GB | 16 GB+ (Harita boyutuna bağlı) |
 | **Depolama** | 30 GB Boş Alan (SSD) | 50 GB+ NVMe M.2 SSD |
 | **Ağ** | Genişbant İnternet | 1 Gbps / Statik IP / DDoS Koruması |
+
+> 📌 **Windows Server 2022 Uyumluluğu:** Script, özellikle Windows Server 2022 üzerinde çalışacak şekilde optimize edilmiştir. Çalıştırıldığı zaman oyun sunucusundan maksimum verim almak için işletim sisteminin güç planını otomatik olarak **Yüksek Performans** (High Performance) olarak ayarlar.
 
 ### 🚀 Adım Adım Kurulum
 
@@ -356,6 +358,7 @@ Projeyi başlatmak ve test etmek için:
 2. (Gerekirse) Ekrana gelen Yönetici İzni (UAC) uyarısına "Evet" deyin. Script güvenlik duvarı kurallarını eklemek için bu izne ihtiyaç duyar.
 3. Script sırasıyla;
    - Gerekli klasörleri oluşturur,
+   - İşletim sistemini performans moduna (Windows Server 2022 vb. için Yüksek Performans) alır,
    - SteamCMD'yi indirir ve kurar,
    - Rust Dedicated Server dosyalarını indirir/günceller,
    - (Açıksa) uMod'u indirip kurar,
@@ -414,5 +417,12 @@ Sunucu yönetimi, komutlar ve eklentiler hakkında daha fazla bilgi için aşağ
 - **Facepunch Resmi Rust Wiki:** [https://wiki.facepunch.com/rust/](https://wiki.facepunch.com/rust/)
 - **uMod (Oxide) Resmi Dokümantasyon:** [https://umod.org/documentation](https://umod.org/documentation)
 - **Valve Developer Community (SteamCMD):** [https://developer.valvesoftware.com/wiki/SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD)
+
+---
+
+## 🔄 Versiyon Geçmişi
+
+- **v1.4.1:** SteamCMD'nin "CWorkThreadPool" hatası fırlatması ve scriptin aniden kapanması sorunu düzeltildi. 3 aşamalı indirme döngüsü (retry mekanizması) eklendi.
+- **v1.4.0:** Gelişmiş sunucu ayarları eklendi.
 
 İyi oyunlar dileriz! 🚀🔥

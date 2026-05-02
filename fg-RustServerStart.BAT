@@ -4,7 +4,7 @@ setlocal EnableDelayedExpansion
 :: ========================================================================
 :: fg-RustServerStart.BAT
 :: Tam Otomatik Rust Dedicated Server Scripti
-:: Versiyon: 1.3.1
+:: Versiyon: 1.4.1
 :: ========================================================================
 
 :: ========================================================================
@@ -136,7 +136,15 @@ if %errorLevel% == 0 (
 echo.
 
 :: ========================================================================
-:: [4] DİZİN YAPISININ OLUŞTURULMASI
+:: [4] WINDOWS SERVER 2022 OPTİMİZASYONLARI
+:: ========================================================================
+echo [*] Windows Server 2022 / Performans optimizasyonlari uygulaniyor...
+powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c >nul 2>&1
+echo [+] Guc plani 'Yuksek Performans' olarak ayarlandi.
+echo.
+
+:: ========================================================================
+:: [5] DİZİN YAPISININ OLUŞTURULMASI
 :: ========================================================================
 echo [*] Dizin yapisi kontrol ediliyor...
 if not exist "%STEAMCMD_DIR%" mkdir "%STEAMCMD_DIR%"
@@ -146,7 +154,7 @@ echo [+] Dizinler hazir.
 echo.
 
 :: ========================================================================
-:: [5] STEAMCMD KONTROLÜ VE KURULUMU
+:: [6] STEAMCMD KONTROLÜ VE KURULUMU
 :: ========================================================================
 if not exist "%STEAMCMD_DIR%\steamcmd.exe" (
     echo [*] SteamCMD bulunamadi. İndiriliyor...
@@ -161,15 +169,33 @@ if not exist "%STEAMCMD_DIR%\steamcmd.exe" (
 echo.
 
 :: ========================================================================
-:: [6] RUST SERVER KURULUMU/GÜNCELLEMESİ
+:: [7] RUST SERVER KURULUMU/GÜNCELLEMESİ
 :: ========================================================================
 if "%AUTO_UPDATE%"=="1" (
     echo [*] Rust Dedicated Server guncelleniyor/kuruluyor...
-    "%STEAMCMD_DIR%\steamcmd.exe" +force_install_dir "%SERVER_DIR%" +login anonymous +app_update 258550 -beta %SERVER_BRANCH% validate +quit
-    if !errorLevel! neq 0 (
-        echo [-] SteamCMD guncelleme sirasinda bir hata olustu.
+    set "STEAMCMD_SUCCESS=0"
+    for /L %%i in (1,1,3) do (
+        if "!STEAMCMD_SUCCESS!"=="0" (
+            if /I "%SERVER_BRANCH%"=="public" (
+                "%STEAMCMD_DIR%\steamcmd.exe" +force_install_dir "%SERVER_DIR%" +login anonymous +app_update 258550 validate +quit
+            ) else (
+                "%STEAMCMD_DIR%\steamcmd.exe" +force_install_dir "%SERVER_DIR%" +login anonymous +app_update 258550 -beta %SERVER_BRANCH% validate +quit
+            )
+            if !errorlevel! equ 0 (
+                set "STEAMCMD_SUCCESS=1"
+            ) else (
+                if %%i lss 3 (
+                    echo [-] SteamCMD hata verdi veya 'CWorkThreadPool' uyarisi alindi. Tekrar deneniyor... [%%i/3]
+                    timeout /t 5 /nobreak >nul
+                )
+            )
+        )
+    )
+    if "!STEAMCMD_SUCCESS!"=="0" (
+        echo [-] SteamCMD guncelleme sirasinda kalici bir hata olustu.
         echo [-] Lutfen internet baglantinizi ve SERVER_BRANCH ayarini kontrol edin.
         pause
+        exit /b 1
     ) else (
         echo [+] Rust Server guncellemesi basarili.
     )
@@ -179,7 +205,7 @@ if "%AUTO_UPDATE%"=="1" (
 echo.
 
 :: ========================================================================
-:: [7] UMOD/OXIDE KURULUMU (Opsiyonel)
+:: [8] UMOD/OXIDE KURULUMU (Opsiyonel)
 :: ========================================================================
 if "%ENABLE_UMOD%"=="1" (
     echo [*] uMod/Oxide kurulumu kontrol ediliyor...
@@ -194,11 +220,11 @@ if "%ENABLE_UMOD%"=="1" (
 echo.
 
 :: ========================================================================
-:: [8] FIREWALL KURALLARI
+:: [9] FIREWALL KURALLARI
 :: ========================================================================
 echo [*] Windows Firewall kurallari uygulaniyor...
 netsh advfirewall firewall show rule name="fg-RustServer - Port %SERVER_PORT% UDP" >nul
-if !errorLevel! neq 0 (
+if errorlevel 1 (
     netsh advfirewall firewall add rule name="fg-RustServer - Port %SERVER_PORT% UDP" dir=in action=allow protocol=UDP localport=%SERVER_PORT%
     netsh advfirewall firewall add rule name="fg-RustServer - Port %RCON_PORT% TCP" dir=in action=allow protocol=TCP localport=%RCON_PORT%
     netsh advfirewall firewall add rule name="fg-RustServer - Port %APP_PORT% TCP" dir=in action=allow protocol=TCP localport=%APP_PORT%
@@ -209,7 +235,7 @@ if !errorLevel! neq 0 (
 echo.
 
 :: ========================================================================
-:: [9] SERVER.CFG OLUŞTURMA
+:: [10] SERVER.CFG OLUŞTURMA
 :: ========================================================================
 set "CFG_DIR=%SERVER_DIR%\server\%SERVER_IDENTITY%\cfg"
 if not exist "%CFG_DIR%" mkdir "%CFG_DIR%"
@@ -268,7 +294,7 @@ echo [+] server.cfg basariyla yazildi.
 echo.
 
 :: ========================================================================
-:: [10] SUNUCU BAŞLATMA DÖNGÜSÜ
+:: [11] SUNUCU BAŞLATMA DÖNGÜSÜ
 :: ========================================================================
 set CRASH_COUNT=0
 

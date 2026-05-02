@@ -22,3 +22,6 @@ README.md dosyası aşağıdaki bileşenleri içermelidir:
 ## Yardımcı Kaynaklar
 - https://umod.org/documentation
 - https://wiki.facepunch.com/rust/
+
+## Diğer Şeyler
+- Script Windows Server 2022 Standard işletim sisteminde çalışacağı için; ona göre geliştirme yapılıp, uyumluluk sağlanmalı.
