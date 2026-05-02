@@ -1,0 +1,31 @@
+# ========================================================================
+# fg-RustServerStartBat - .gitignore
+# ========================================================================
+
+# SteamCMD (otomatik indirilir)
+steamcmd/
+
+# Rust Dedicated Server (otomatik indirilir)
+server/
+
+# Crash ve konsol logları (otomatik oluşur)
+logs/
+
+# Geçici dosyalar
+*.tmp
+*.temp
+*.bak
+
+# Windows sistem dosyaları
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# IDE ve editör dosyaları
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# İndirme arşivleri
+*.zip
