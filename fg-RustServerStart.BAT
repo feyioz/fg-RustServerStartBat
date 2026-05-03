@@ -17,7 +17,7 @@ exit /b !FG_EXIT_CODE!
 :: ========================================================================
 :: fg-RustServerStart.BAT
 :: Tam Otomatik Rust Dedicated Server Scripti
-:: Versiyon: 1.4.4
+:: Versiyon: 1.4.10
 :: ========================================================================
 
 :: ========================================================================
@@ -221,12 +221,13 @@ echo.
 :: [8] UMOD/OXIDE KURULUMU (Opsiyonel)
 :: ========================================================================
 if "%ENABLE_UMOD%"=="1" (
-    echo [*] uMod/Oxide kurulumu kontrol ediliyor...
-    powershell -Command "$release = Invoke-RestMethod -Uri 'https://api.github.com/repos/OxideMod/Oxide.Rust/releases/latest' | ConvertFrom-Json; $asset = $release.assets | Where-Object { $_.name -eq 'Oxide.Rust.zip' }; Invoke-WebRequest -Uri $asset.browser_download_url -OutFile '%SERVER_DIR%\Oxide.Rust.zip'"
-    echo [*] uMod arsivden cikariliyor...
-    powershell -Command "Expand-Archive -Path '%SERVER_DIR%\Oxide.Rust.zip' -DestinationPath '%SERVER_DIR%\RustDedicated_Data' -Force"
-    del "%SERVER_DIR%\Oxide.Rust.zip"
-    echo [+] uMod kurulumu/guncellemesi tamamlandi.
+    echo [*] uMod/Oxide surumleri kontrol ediliyor...
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $releases = Invoke-RestMethod -Uri 'https://api.github.com/repos/OxideMod/Oxide.Rust/releases' | Select-Object -First 5; Write-Host '==================================================='; Write-Host '       uMod/Oxide Kurulum Menusu'; Write-Host '==================================================='; $i = 1; foreach ($r in $releases) { Write-Host ('[' + $i + '] ' + $r.tag_name); $i++ }; Write-Host '[0] Iptal et / Atla'; Write-Host '==================================================='; $selection = -1; while ($true) { $input = Read-Host 'Lutfen kurmak istediginiz surumu secin (0-5)'; if ([int]::TryParse($input, [ref]$selection) -and $selection -ge 0 -and $selection -le 5) { break; } else { Write-Host '[-] Gecersiz secim. Lutfen 0 ile 5 arasinda bir sayi girin.' -ForegroundColor Red } }; if ($selection -eq 0) { Write-Host '[*] uMod kurulumu atlandi.' -ForegroundColor Yellow; exit 0 }; $selectedRelease = $releases[$selection - 1]; $version = $selectedRelease.tag_name; $asset = $selectedRelease.assets | Where-Object { $_.name -eq 'Oxide.Rust.zip' }; if (-not $asset) { Write-Host '[-] HATA: Secilen surum icin Oxide.Rust.zip bulunamadi.' -ForegroundColor Red; exit 1 }; $zipFile = '%SERVER_DIR%\Oxide.Rust.zip'; Write-Host ('[*] ' + $version + ' indiriliyor...') -ForegroundColor Cyan; Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zipFile; Write-Host '[*] uMod dosyalari arsivden cikariliyor...' -ForegroundColor Cyan; Add-Type -AssemblyName System.IO.Compression.FileSystem; $archive = [System.IO.Compression.ZipFile]::OpenRead($zipFile); foreach ($entry in $archive.Entries) { $destinationPath = [System.IO.Path]::Combine('%SERVER_DIR%', $entry.FullName); $destinationDir = [System.IO.Path]::GetDirectoryName($destinationPath); if (-not (Test-Path $destinationDir)) { New-Item -ItemType Directory -Path $destinationDir | Out-Null }; if ($entry.Name -ne '') { try { if (Test-Path $destinationPath) { Set-ItemProperty -Path $destinationPath -Name IsReadOnly -Value $false -ErrorAction SilentlyContinue; Remove-Item -Path $destinationPath -Force -ErrorAction Stop }; [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $destinationPath, $true) } catch { Write-Host ('[-] HATA: ' + $destinationPath + ' yazilamadi. ' + $_.Exception.Message) -ForegroundColor Red; exit 1 } } }; $archive.Dispose(); $checkFile = [System.IO.Path]::Combine('%SERVER_DIR%', 'RustDedicated_Data', 'Managed', 'Oxide.Core.dll'); if (-not (Test-Path $checkFile)) { Write-Host '[-] HATA: Oxide dosyalari eksik.' -ForegroundColor Red; exit 1 } else { Write-Host ('[+] uMod kurulumu (' + $version + ') basariyla tamamlandi.') -ForegroundColor Green }"
+    if !errorlevel! neq 0 (
+        echo [-] UYARI: uMod/Oxide kurulumunda kritik bir hata olustu! Lutfen yukaridaki kirmizi mesajlari kontrol edin.
+        pause
+        exit /b 1
+    )
 ) else (
     echo [*] uMod/Oxide kurulumu devre disi.
 )

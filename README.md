@@ -1,6 +1,6 @@
 ﻿# 🎮 fg-RustServerStart.BAT - Tam Otomatik Rust Sunucu Scripti
 
-[![Version](https://img.shields.io/badge/version-1.4.4-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
+[![Version](https://img.shields.io/badge/version-1.4.10-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -431,18 +431,27 @@ Geliştirici rehberimiz basittir: Herkes katkıda bulunabilir! ✨
 
 ---
 
-## 📚 Diğer & Yardımcı Kaynaklar
+## 📚 Daha Diğer
 
-Sunucu yönetimi, komutlar ve eklentiler hakkında daha fazla bilgi için aşağıdaki resmi kaynakları kullanabilirsiniz:
+Projeyle ilgili diğer önemli bilgiler, sunucu yönetimi, komutlar ve eklentiler hakkında daha fazla bilgi için aşağıdaki resmi kaynakları kullanabilirsiniz:
 
+### Yardımcı Kaynaklar
 - **Facepunch Resmi Rust Wiki:** [https://wiki.facepunch.com/rust/](https://wiki.facepunch.com/rust/)
 - **uMod (Oxide) Resmi Dokümantasyon:** [https://umod.org/documentation](https://umod.org/documentation)
 - **Valve Developer Community (SteamCMD):** [https://developer.valvesoftware.com/wiki/SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD)
+
+Script Windows Server 2022 Standard işletim sisteminde çalışacağı için bu ortama tam uyumluluk düşünülerek tasarlanmıştır.
 
 ---
 
 ## 🔄 Versiyon Geçmişi
 
+- **v1.4.10:** uMod/Oxide kurulumundaki powershell satırında bulunan "!" ünlem işaretlerinin gecikmeli değişken genişletme (DelayedExpansion) tarafından yutulmasıyla oluşan "Missing closing ')' in expression" syntax hatası çözüldü. Script Windows Server 2022 uyumluluğu korundu.
+- **v1.4.9:** Otomatik uMod (Oxide) kurulumu özelliği güncellendi. Artık konsolda en son yayımlanan 5 Windows sürüm (v2.0.7283 vb.) seçeneği listeleniyor ve seçilen sürüm yükleniyor. Gereksiz test dosyaları silindi. Script Windows Server 2022 uyumluluğuna sahiptir.
+- **v1.4.8:** uMod (Oxide) kurulum adımına gelişmiş bir hata yakalama (try/catch) döngüsü eklendi. Arka planda açık kalan sunucu dosyalarının (Assembly-CSharp.dll) modifiye edilmesini engelleyen Windows kilitleri (Read-Only) artık zorla aşılıyor. Ayrıca kurulum bitiminde doğrulama kontrolü eklendi; Oxide kurulamazsa script otomatik olarak duraklıyor ve kırmızı renkli bir uyarı veriyor. Windows Server TLS 1.2 protokol zorunluluğu giderildi.
+- **v1.4.7:** PowerShell'in `Expand-Archive` cmdlet'inin mevcut dosyaların üzerine yazma sırasındaki yetersizliği düzeltildi. UMod dosyaları artık `.NET` Compression sınıfları aracılığıyla daha güçlü ve hatasız bir şekilde çıkartılıyor.
+- **v1.4.6:** uMod/Oxide'in `.zip` arşiv içeriğinden kaynaklanan yanlış klasöre çıkartılma (`RustDedicated_Data\RustDedicated_Data`) sorunu çözüldü. Ayrıca, SteamCMD güncellemelerinin Oxide modifikasyonlarını silmesini engellemek için, sürüm aynı olsa bile her başlatmada Oxide dosyalarının yerel arşivden orijinal dosyaların üzerine yazılması sağlandı.
+- **v1.4.5:** uMod/Oxide için akıllı sürüm kontrolü eklendi; artık her açılışta gereksiz yere baştan indirilmiyor, sadece yeni bir sürüm varsa otomatik güncelleniyor.
 - **v1.4.4:** `Vanilla+ | ...` gibi özel karakter içeren sunucu adı/tag değerlerinin CMD tarafından komut sanılmasına neden olan başlatma parametresi hatası düzeltildi.
 - **v1.4.3:** Windows Server 2022'de firewall adımından sonra konsolun aniden kapanmasını engelleyen güvenli dış çalıştırıcı eklendi; firewall kuralları port bazlı doğrulama ve açık hata mesajlarıyla güçlendirildi.
 - **v1.4.2:** Firewall ayarlarından hemen sonra boş Owner/Moderator listesi kontrolünde yaşanan syntax hatası (script'in aniden kapanması) çözüldü.
