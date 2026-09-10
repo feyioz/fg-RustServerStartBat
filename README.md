@@ -1,6 +1,6 @@
 ﻿# 🎮 fg-RustServerStart.BAT - Tam Otomatik Rust Sunucu Scripti
 
-[![Version](https://img.shields.io/badge/version-1.4.10-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
+[![Version](https://img.shields.io/badge/version-1.4.11-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -17,6 +17,10 @@ Bu projenin geliştirilmesinde aşağıdaki standartlara ve kılavuzlara uyulmak
 3. **Güvenlik ve İzolasyon:** Script Windows Güvenlik Duvarı kurallarını otomatik yönetmeli ve gerekli izinler olmadığında UAC isteği ile güvenli bir yükseltme yapmalıdır.
 4. **Hata Toleransı (Resilience):** Crash durumlarında sunucu otomatik olarak yeniden başlatılmalı; ancak sonsuz döngüleri önlemek için bir sınır (limit) belirlenmelidir.
 5. **Dokümantasyon Sürekliliği:** Her sürüm güncellemesinde `README.md` dosyası projenin kök dizininde otomatik güncellenmeli ve sürüm numarası artırılmalıdır.
+6. **AGENTS.md Dokunulmazlığı:** Projenin kök dizinindeki `AGENTS.md` dosyası salt okunur referans kabul edilir; üzerinde herhangi bir düzenleme, silme veya güncelleme yapılmaz.
+7. **Web Araması Kuralı:** Güncel ve olgusal doğruluk gerektiren sorgularda, iç bilgi tabanına başvurulmadan önce her zaman önce Web Araması (Web Search) çalıştırılır.
+8. **İşletim Sistemi Uyumu:** Geliştirme, script'in Windows Server 2022 Standard üzerinde hatasız çalışması hedefiyle yapılır; her değişiklik bu ortam açısından uyumluluk bakımından değerlendirilir.
+9. **Kaynak Verimliliği:** Yanıt kalitesinden ve doğruluktan ödün vermeden token, bağlam ve kaynak tasarrufu hedeflenir; öz ve amaca yönelik çıktılar üretilir.
 
 ---
 
@@ -446,6 +450,7 @@ Script Windows Server 2022 Standard işletim sisteminde çalışacağı için bu
 
 ## 🔄 Versiyon Geçmişi
 
+- **v1.4.11:** README.md, AGENTS.md kurallarına göre güncellendi; "Proje Kuralları" bölümü AGENTS.md ile hizalandı ve BAT–README versiyon senkronu (1.4.11) sağlandı. Script mantığında değişiklik yoktur.
 - **v1.4.10:** uMod/Oxide kurulumundaki powershell satırında bulunan "!" ünlem işaretlerinin gecikmeli değişken genişletme (DelayedExpansion) tarafından yutulmasıyla oluşan "Missing closing ')' in expression" syntax hatası çözüldü. Script Windows Server 2022 uyumluluğu korundu.
 - **v1.4.9:** Otomatik uMod (Oxide) kurulumu özelliği güncellendi. Artık konsolda en son yayımlanan 5 Windows sürüm (v2.0.7283 vb.) seçeneği listeleniyor ve seçilen sürüm yükleniyor. Gereksiz test dosyaları silindi. Script Windows Server 2022 uyumluluğuna sahiptir.
 - **v1.4.8:** uMod (Oxide) kurulum adımına gelişmiş bir hata yakalama (try/catch) döngüsü eklendi. Arka planda açık kalan sunucu dosyalarının (Assembly-CSharp.dll) modifiye edilmesini engelleyen Windows kilitleri (Read-Only) artık zorla aşılıyor. Ayrıca kurulum bitiminde doğrulama kontrolü eklendi; Oxide kurulamazsa script otomatik olarak duraklıyor ve kırmızı renkli bir uyarı veriyor. Windows Server TLS 1.2 protokol zorunluluğu giderildi.
