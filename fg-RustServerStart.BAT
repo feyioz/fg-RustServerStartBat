@@ -17,7 +17,7 @@ exit /b !FG_EXIT_CODE!
 :: ========================================================================
 :: fg-RustServerStart.BAT
 :: Tam Otomatik Rust Dedicated Server Scripti
-:: Versiyon: 1.4.11
+:: Versiyon: 1.4.12
 :: ========================================================================
 
 :: ========================================================================
@@ -29,6 +29,8 @@ set "SERVER_HOSTNAME=feyioz Rust Server"
 set "SERVER_DESCRIPTION=Powered by feyioz - Tam otomatik sunucu"
 set "SERVER_URL=https://feyioz.com"
 set "SERVER_HEADERIMAGE=https://feyioz.com/banner.jpg"
+:: Sunucu logosu (tarayici ve Rust+ uygulamasinda gosterilir). Bos = gonderilmez.
+set "SERVER_LOGOIMAGE="
 set "SERVER_IDENTITY=feyioz_rust"
 set "SERVER_MAXPLAYERS=50"
 set "SERVER_SEED=auto"
@@ -40,6 +42,7 @@ set "SERVER_TAGS=monthly,vanilla,EU"
 :: --- 1.2 Ağ Ayarları ---
 set "SERVER_IP=0.0.0.0"
 set "SERVER_PORT=28015"
+:: Bos birakilirsa otomatik hesaplanir: en buyuk port (oyun/RCON) + 1. Oyun portundan farkli olmalidir.
 set "SERVER_QUERYPORT="
 set "RCON_IP=0.0.0.0"
 set "RCON_PORT=28016"
@@ -62,6 +65,7 @@ set "CODELOCK_MAXFAILEDATTEMPTS=8"
 
 :: --- 1.5 Performans Ayarları ---
 set "SERVER_TICKRATE=30"
+:: Sunucu FPS limiti (+fps.limit olarak gonderilir; motor varsayilani 256)
 set "SERVER_FPSLIMIT=120"
 set "SERVER_SAVEINTERVAL=600"
 set "GC_INTERVAL="
@@ -74,6 +78,8 @@ set "DECAY_SCALE=1"
 set "DECAY_TICK=600"
 set "DECAY_UPKEEP=1"
 set "DECAY_UPKEEP_PERIOD_MINUTES=1440"
+:: Grup bakim vergisi (Eylul 2026 "Breach and Clear" guncellemesi). 0 = vergi kapali.
+set "DECAY_UPKEEP_GROUP_SCALING=1"
 set "DECAY_DURATION_TOPTIER="
 set "DECAY_DURATION_METAL="
 set "DECAY_DURATION_STONE="
@@ -81,27 +87,41 @@ set "DECAY_DURATION_WOOD="
 set "DECAY_DURATION_TWIG="
 
 :: --- 1.7 Hayvan & NPC Popülasyon Ayarları ---
+:: Not: wolf.population, Wolves2 guncellemesiyle wolf2.population olarak yeniden adlandirildi.
 set "BEAR_POPULATION=2"
 set "BOAR_POPULATION=5"
 set "CHICKEN_POPULATION=3"
 set "STAG_POPULATION=3"
-set "WOLF_POPULATION=3"
+set "WOLF2_POPULATION=2"
+set "POLARBEAR_POPULATION=1"
+set "TIGER_POPULATION=0.5"
+set "PANTHER_POPULATION=0.5"
+set "CROCODILE_POPULATION=1"
+set "SNAKEHAZARD_POPULATION=5"
+set "NPCS_ENABLED=1"
 set "AI_TICKRATE=5"
 set "AI_IGNOREPLAYERS=0"
+:: Ileri duzey performans anahtarlari. Bos = varsayilan (1).
+set "AI_MOVE="
+set "AI_THINK="
 
 :: --- 1.8 Oyun İçi Event Ayarları ---
 set "CARGOSHIP_ENABLED=1"
 set "CARGOSHIP_DURATION_MINUTES=50"
 set "CARGOSHIP_LOOT_ROUNDS=3"
 set "CARGOSHIP_LOOT_SPACING_MINUTES=10"
-set "PATROLHELICOPTER_MAX=1"
-set "HELI_BULLETDAMAGE="
+set "HELI_BULLETDMGSCALE="
 set "BRADLEY_ENABLED=1"
 set "MISSIONS_ENABLED=1"
 
 :: --- 1.9 Oynanış & Gelişmiş Ayarları ---
 set "SERVER_PVE=0"
-set "CRAFT_INSTANT=0"
+:: craft.instant vanilla surumunden kaldirildi; yalnizca eski surumler/pluginler icin doldurun.
+set "CRAFT_INSTANT="
+:: Radyasyon bolgelerini acar/kapatir.
+set "SERVER_RADIATION=1"
+:: Maksimum ekip (team) boyutu. 0 = takimlar kapali.
+set "SERVER_TEAMMAXSIZE=8"
 set "SERVER_ITEMDESPAWN=180"
 set "SERVER_BRANCH=public"
 
@@ -236,6 +256,14 @@ echo.
 :: ========================================================================
 :: [9] FIREWALL KURALLARI
 :: ========================================================================
+:: Queryport otomatik hesaplama: bos ise en buyuk port (oyun/RCON) + 1.
+:: Facepunch (Subat 2023 ag guncellemesi): queryport acik degilse sunucu listede gorunmez.
+set "QUERYPORT_FINAL=%SERVER_QUERYPORT%"
+if "%SERVER_QUERYPORT%"=="" (
+    set /a QUERYPORT_FINAL=SERVER_PORT+1
+    if %RCON_PORT% gtr %SERVER_PORT% set /a QUERYPORT_FINAL=RCON_PORT+1
+)
+
 echo [*] Windows Firewall kurallari kontrol ediliyor...
 netsh advfirewall firewall show rule name="fg-RustServer - Port %SERVER_PORT% UDP" >nul 2>&1
 if errorlevel 1 (
@@ -278,19 +306,17 @@ if "%RUSTPLUS_ENABLED%"=="1" (
     )
 )
 
-if not "%SERVER_QUERYPORT%"=="" (
-    netsh advfirewall firewall show rule name="fg-RustServer - Port %SERVER_QUERYPORT% UDP" >nul 2>&1
+netsh advfirewall firewall show rule name="fg-RustServer - Port %QUERYPORT_FINAL% UDP" >nul 2>&1
+if errorlevel 1 (
+    netsh advfirewall firewall add rule name="fg-RustServer - Port %QUERYPORT_FINAL% UDP" dir=in action=allow protocol=UDP localport=%QUERYPORT_FINAL% >nul 2>&1
     if errorlevel 1 (
-        netsh advfirewall firewall add rule name="fg-RustServer - Port %SERVER_QUERYPORT% UDP" dir=in action=allow protocol=UDP localport=%SERVER_QUERYPORT% >nul 2>&1
-        if errorlevel 1 (
-            echo [-] HATA: Firewall kurali eklenemedi: UDP %SERVER_QUERYPORT%
-            echo [-] Windows Defender Firewall servisini ve yonetici yetkisini kontrol edin.
-            exit /b 1
-        )
-        echo [+] Firewall kurali eklendi: UDP %SERVER_QUERYPORT%
-    ) else (
-        echo [+] Firewall kurali zaten mevcut: UDP %SERVER_QUERYPORT%
+        echo [-] HATA: Firewall kurali eklenemedi: UDP %QUERYPORT_FINAL%
+        echo [-] Windows Defender Firewall servisini ve yonetici yetkisini kontrol edin.
+        exit /b 1
     )
+    echo [+] Firewall kurali eklendi: UDP %QUERYPORT_FINAL% (Queryport)
+) else (
+    echo [+] Firewall kurali zaten mevcut: UDP %QUERYPORT_FINAL% (Queryport)
 )
 echo.
 
@@ -304,12 +330,15 @@ set "CFG_FILE=%CFG_DIR%\server.cfg"
 echo [*] server.cfg dosyasi olusturuluyor...
 echo :: fg-RustServer Otomatik server.cfg > "%CFG_FILE%"
 echo server.pve %SERVER_PVE% >> "%CFG_FILE%"
-echo craft.instant %CRAFT_INSTANT% >> "%CFG_FILE%"
+echo server.radiation %SERVER_RADIATION% >> "%CFG_FILE%"
+echo relationshipmanager.maxteamsize %SERVER_TEAMMAXSIZE% >> "%CFG_FILE%"
 echo server.itemdespawn %SERVER_ITEMDESPAWN% >> "%CFG_FILE%"
+if not "%CRAFT_INSTANT%"=="" echo craft.instant %CRAFT_INSTANT% >> "%CFG_FILE%"
 echo decay.scale %DECAY_SCALE% >> "%CFG_FILE%"
 echo decay.tick %DECAY_TICK% >> "%CFG_FILE%"
 echo decay.upkeep %DECAY_UPKEEP% >> "%CFG_FILE%"
 echo decay.upkeep_period_minutes %DECAY_UPKEEP_PERIOD_MINUTES% >> "%CFG_FILE%"
+echo decay.upkeep_group_scaling %DECAY_UPKEEP_GROUP_SCALING% >> "%CFG_FILE%"
 if not "%DECAY_DURATION_TOPTIER%"=="" echo decay.duration_toptier %DECAY_DURATION_TOPTIER% >> "%CFG_FILE%"
 if not "%DECAY_DURATION_METAL%"=="" echo decay.duration_metal %DECAY_DURATION_METAL% >> "%CFG_FILE%"
 if not "%DECAY_DURATION_STONE%"=="" echo decay.duration_stone %DECAY_DURATION_STONE% >> "%CFG_FILE%"
@@ -319,15 +348,22 @@ echo bear.population %BEAR_POPULATION% >> "%CFG_FILE%"
 echo boar.population %BOAR_POPULATION% >> "%CFG_FILE%"
 echo chicken.population %CHICKEN_POPULATION% >> "%CFG_FILE%"
 echo stag.population %STAG_POPULATION% >> "%CFG_FILE%"
-echo wolf.population %WOLF_POPULATION% >> "%CFG_FILE%"
+echo wolf2.population %WOLF2_POPULATION% >> "%CFG_FILE%"
+echo polarbear.population %POLARBEAR_POPULATION% >> "%CFG_FILE%"
+echo tiger.population %TIGER_POPULATION% >> "%CFG_FILE%"
+echo panther.population %PANTHER_POPULATION% >> "%CFG_FILE%"
+echo crocodile.population %CROCODILE_POPULATION% >> "%CFG_FILE%"
+echo snakehazard.population %SNAKEHAZARD_POPULATION% >> "%CFG_FILE%"
+echo ai.npc_enable %NPCS_ENABLED% >> "%CFG_FILE%"
 echo ai.tickrate %AI_TICKRATE% >> "%CFG_FILE%"
 echo ai.ignoreplayers %AI_IGNOREPLAYERS% >> "%CFG_FILE%"
+if not "%AI_MOVE%"=="" echo ai.move %AI_MOVE% >> "%CFG_FILE%"
+if not "%AI_THINK%"=="" echo ai.think %AI_THINK% >> "%CFG_FILE%"
 echo cargoship.event_enabled %CARGOSHIP_ENABLED% >> "%CFG_FILE%"
 echo cargoship.event_duration_minutes %CARGOSHIP_DURATION_MINUTES% >> "%CFG_FILE%"
 echo cargoship.loot_rounds %CARGOSHIP_LOOT_ROUNDS% >> "%CFG_FILE%"
-echo cargoship.loot_spacing_minutes %CARGOSHIP_LOOT_SPACING_MINUTES% >> "%CFG_FILE%"
-echo patrolhelicopter.max %PATROLHELICOPTER_MAX% >> "%CFG_FILE%"
-if not "%HELI_BULLETDAMAGE%"=="" echo heli.bulletdamage %HELI_BULLETDAMAGE% >> "%CFG_FILE%"
+echo cargoship.loot_round_spacing_minutes %CARGOSHIP_LOOT_SPACING_MINUTES% >> "%CFG_FILE%"
+if not "%HELI_BULLETDMGSCALE%"=="" echo heli.bulletdamagescale %HELI_BULLETDMGSCALE% >> "%CFG_FILE%"
 echo bradley.enabled %BRADLEY_ENABLED% >> "%CFG_FILE%"
 echo basemission.missionsenabled %MISSIONS_ENABLED% >> "%CFG_FILE%"
 echo codelock.lockoutcooldown %CODELOCK_LOCKOUTCOOLDOWN% >> "%CFG_FILE%"
@@ -373,6 +409,7 @@ set "START_PARAMS=!START_PARAMS! +server.hostname "!SERVER_HOSTNAME!""
 set "START_PARAMS=!START_PARAMS! +server.description "!SERVER_DESCRIPTION!""
 set "START_PARAMS=!START_PARAMS! +server.url "!SERVER_URL!""
 set "START_PARAMS=!START_PARAMS! +server.headerimage "!SERVER_HEADERIMAGE!""
+if not "!SERVER_LOGOIMAGE!"=="" set "START_PARAMS=!START_PARAMS! +server.logoimage "!SERVER_LOGOIMAGE!""
 set "START_PARAMS=!START_PARAMS! +server.maxplayers !SERVER_MAXPLAYERS!"
 
 if "!SERVER_LEVELURL!"=="" (
@@ -394,8 +431,8 @@ if "!RUSTPLUS_ENABLED!"=="1" (
     set "START_PARAMS=!START_PARAMS! +app.port 1-"
 )
 
-if not "!SERVER_QUERYPORT!"=="" set "START_PARAMS=!START_PARAMS! +server.queryport !SERVER_QUERYPORT!"
-if not "!SERVER_FPSLIMIT!"=="" set "START_PARAMS=!START_PARAMS! +server.fps !SERVER_FPSLIMIT!"
+set "START_PARAMS=!START_PARAMS! +server.queryport !QUERYPORT_FINAL!"
+if not "!SERVER_FPSLIMIT!"=="" set "START_PARAMS=!START_PARAMS! +fps.limit !SERVER_FPSLIMIT!"
 set "START_PARAMS=!START_PARAMS! +global.maxthreads !GLOBAL_MAXTHREADS!"
 
 :START_SERVER

@@ -1,6 +1,6 @@
 ﻿# 🎮 fg-RustServerStart.BAT - Tam Otomatik Rust Sunucu Scripti
 
-[![Version](https://img.shields.io/badge/version-1.4.11-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
+[![Version](https://img.shields.io/badge/version-1.4.12-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -44,7 +44,7 @@ Bu projede kullanılan ana kütüphane, framework ve araçlar:
 |---------|---------|----------|
 | **İşletim Sistemi** | Windows 10 / Server 2016 | Windows 11 / Server 2022 |
 | **İşlemci (CPU)** | 4 Çekirdek (3.0 GHz+) | 8+ Çekirdek (Yüksek Saat Hızı) |
-| **Bellek (RAM)** | 8 GB | 16 GB+ (Harita boyutuna bağlı) |
+| **Bellek (RAM)** | 12 GB | 16 GB+ (Harita boyutuna bağlı) |
 | **Depolama** | 30 GB Boş Alan (SSD) | 50 GB+ NVMe M.2 SSD |
 | **Ağ** | Genişbant İnternet | 1 Gbps / Statik IP / DDoS Koruması |
 
@@ -72,6 +72,7 @@ Bu projede kullanılan ana kütüphane, framework ve araçlar:
 | `SERVER_DESCRIPTION` | "Powered by feyioz - Tam otomatik sunucu" | Sunucu açıklaması. (\n ile alt satıra geçilebilir) |
 | `SERVER_URL` | "https://feyioz.com" | Sunucunun web sitesi veya Discord linki. |
 | `SERVER_HEADERIMAGE` | "https://feyioz.com/banner.jpg" | Sunucu banner resmi. (512x256 önerilir) |
+| `SERVER_LOGOIMAGE` | "" | Sunucu logosu. (Sunucu tarayıcısında ve Rust+ uygulamasında gösterilir. Boş bırakılırsa gönderilmez) |
 | `SERVER_IDENTITY` | "feyioz_rust" | Kayıt dosyalarının ve ayarların tutulduğu klasör adı. |
 | `SERVER_MAXPLAYERS` | 50 | Maksimum oyuncu sayısı. |
 | `SERVER_SEED` | "auto" | Harita tohumu. (0-2147483647 arası sayı. "auto" rastgele oluşturur) |
@@ -156,7 +157,7 @@ Tags, Rust sunucu tarayıcısında oyuncuların sunucunuzu bulmasını sağlayan
 |-----------|------------------|----------|
 | `SERVER_IP` | 0.0.0.0 | Sunucunun dinleyeceği IP adresi. (0.0.0.0 tüm arayüzler demektir) |
 | `SERVER_PORT` | 28015 | Oyun bağlantı portu. (UDP) |
-| `SERVER_QUERYPORT` | "" | Steam sorgu portu. (Boş bırakılırsa oyun portunu kullanır) |
+| `SERVER_QUERYPORT` | "" | Steam sorgu portu. (UDP. **Boş bırakılırsa otomatik hesaplanır:** en büyük port (oyun/RCON) + 1, varsayılan kurulumda 28017. Oyun portundan farklı olmalıdır; bu port açık değilse sunucu listede görünmez) |
 | `RCON_IP` | 0.0.0.0 | RCON'un dinleyeceği IP. |
 | `RCON_PORT` | 28016 | RCON bağlantı portu. (TCP) |
 | `RCON_PASSWORD` | "change_me_rcon_pass" | RCON yönetici şifresi. **(Kesinlikle değiştirin!)** |
@@ -185,7 +186,7 @@ Tags, Rust sunucu tarayıcısında oyuncuların sunucunuzu bulmasını sağlayan
 | Parametre | Varsayılan Değer | Açıklama |
 |-----------|------------------|----------|
 | `SERVER_TICKRATE` | 30 | Sunucu tick hızı. (Performans için 30-60 önerilir) |
-| `SERVER_FPSLIMIT` | 120 | Maksimum sunucu FPS'i. |
+| `SERVER_FPSLIMIT` | 120 | Maksimum sunucu FPS'i. (`+fps.limit` olarak gönderilir; motor varsayılanı 256) |
 | `SERVER_SAVEINTERVAL` | 600 | Haritanın ne sıklıkla kaydedileceği. (sn, 600 = 10 dk) |
 | `GC_INTERVAL` | "" | Garbage Collection (Bellek temizleme) aralığı. |
 | `GC_BUFFERCOUNT` | "" | GC tampon boyutu. |
@@ -199,6 +200,7 @@ Tags, Rust sunucu tarayıcısında oyuncuların sunucunuzu bulmasını sağlayan
 | `DECAY_TICK` | 600 | Çürüme hesaplama sıklığı. |
 | `DECAY_UPKEEP` | 1 | Tool Cupboard (Dolap) bakım sistemini açar/kapatır. |
 | `DECAY_UPKEEP_PERIOD_MINUTES`| 1440 | Tam dolu bir dolabın koruma süresi. (1440 = 24 Saat) |
+| `DECAY_UPKEEP_GROUP_SCALING` | 1 | Grup bakım vergisi (Eylül 2026 "Breach and Clear" güncellemesi). Dolapta yetkili kişi sayısına göre bakım maliyetini artırır. (0 = vergi tamamen kapalı) |
 | `DECAY_DURATION_TOPTIER` | "" | Yüksek kalite (HQM) yapıların çürüme süresi. (Saat) |
 | `DECAY_DURATION_METAL` | "" | Metal yapıların çürüme süresi. (Saat) |
 | `DECAY_DURATION_STONE` | "" | Taş yapıların çürüme süresi. (Saat) |
@@ -208,13 +210,21 @@ Tags, Rust sunucu tarayıcısında oyuncuların sunucunuzu bulmasını sağlayan
 ### 1.7 Hayvan & NPC Popülasyon Ayarları
 | Parametre | Varsayılan Değer | Açıklama |
 |-----------|------------------|----------|
-| `BEAR_POPULATION` | 2 | Ayı sayısı çarpanı. |
-| `BOAR_POPULATION` | 5 | Domuz sayısı çarpanı. |
-| `CHICKEN_POPULATION` | 3 | Tavuk sayısı çarpanı. |
-| `STAG_POPULATION` | 3 | Geyik sayısı çarpanı. |
-| `WOLF_POPULATION` | 3 | Kurt sayısı çarpanı. |
+| `BEAR_POPULATION` | 2 | Ayı sayısı çarpanı. (km² başına) |
+| `BOAR_POPULATION` | 5 | Domuz sayısı çarpanı. (km² başına) |
+| `CHICKEN_POPULATION` | 3 | Tavuk sayısı çarpanı. (km² başına) |
+| `STAG_POPULATION` | 3 | Geyik sayısı çarpanı. (km² başına) |
+| `WOLF2_POPULATION` | 2 | Kurt sayısı çarpanı. (km² başına. **Not:** `wolf.population`, Wolves2 güncellemesiyle `wolf2.population` olarak yeniden adlandırıldı; eski ad artık yok sayılır) |
+| `POLARBEAR_POPULATION` | 1 | Kutup ayısı sayısı. (Kar biyomu, km² başına) |
+| `TIGER_POPULATION` | 0.5 | Kaplan sayısı. (Jungle biyomu, km² başına) |
+| `PANTHER_POPULATION` | 0.5 | Panter sayısı. (Jungle biyomu, km² başına) |
+| `CROCODILE_POPULATION` | 1 | Timsah sayısı. (Jungle/bataklık, km² başına) |
+| `SNAKEHAZARD_POPULATION` | 5 | Yılan sayısı. (Jungle bitki örtüsü, km² başına) |
+| `NPCS_ENABLED` | 1 | NPC (bilim insanı vb.) spawning'in ana anahtarı. (0 = hiçbir NPC spawn olmaz) |
 | `AI_TICKRATE` | 5 | NPC düşünme/hareket etme hızı. |
 | `AI_IGNOREPLAYERS` | 0 | 1 yapılırsa hayvanlar ve NPC'ler oyunculara saldırmaz. |
+| `AI_MOVE` | "" | Boş = varsayılan (1). 0 yapılırsa hayvanlar hareket etmez. (Performans için) |
+| `AI_THINK` | "" | Boş = varsayılan (1). 0 yapılırsa NPC yapay zekası durur. (Performans için) |
 
 ### 1.8 Oyun İçi Event Ayarları
 | Parametre | Varsayılan Değer | Açıklama |
@@ -223,16 +233,19 @@ Tags, Rust sunucu tarayıcısında oyuncuların sunucunuzu bulmasını sağlayan
 | `CARGOSHIP_DURATION_MINUTES`| 50 | Kargo gemisinin haritada kalma süresi. (dk) |
 | `CARGOSHIP_LOOT_ROUNDS` | 3 | Kargo gemisinde kaç kere sandık yenileneceği. |
 | `CARGOSHIP_LOOT_SPACING_MINUTES` | 10 | Sandıkların yenilenme süresi aralığı. (dk) |
-| `PATROLHELICOPTER_MAX` | 1 | Haritada aynı anda bulunabilecek maksimum devriye helikopteri. |
-| `HELI_BULLETDAMAGE` | "" | Helikopter mermi hasarı. |
+| `HELI_BULLETDMGSCALE` | "" | Devriye helikopteri mermi hasarı çarpanı. (1 = normal, 2 = 2 katı hasar. Boş = motor varsayılanı) |
 | `BRADLEY_ENABLED` | 1 | Bradley APC (Tank) etkinliğini açar/kapatır. |
 | `MISSIONS_ENABLED` | 1 | NPC görev sistemini açar/kapatır. |
+
+> ℹ️ **Devriye helikopteri (Patrol Helicopter) notu:** Eski `patrolhelicopter.max` convar'ı güncel Rust sürümünde bulunmamaktadır; helikopter davranışını ince ayarlamak için sunucu konsolunda `find patrolhelicopterai` komutuyla güncel convar listesini görebilirsiniz.
 
 ### 1.9 Oynanış & Gelişmiş Ayarları
 | Parametre | Varsayılan Değer | Açıklama |
 |-----------|------------------|----------|
 | `SERVER_PVE` | 0 | 1 yapılırsa oyuncular birbirlerine hasar veremez. (Sadece çevreye ve NPC'lere) |
-| `CRAFT_INSTANT` | 0 | 1 yapılırsa eşyalar bekleme süresi olmadan anında üretilir. |
+| `CRAFT_INSTANT` | "" | **Dikkat:** `craft.instant` convar'ı güncel Rust sürümünden kaldırılmıştır; anında üretim artık eklenti (plugin) gerektirir. Yalnızca eski sürümler için doldurun, boş bırakılırsa `server.cfg`'ye yazılmaz. |
+| `SERVER_RADIATION` | 1 | Radyasyon bölgelerini açar/kapatır. (0 = anıtlarda radyasyon olmaz) |
+| `SERVER_TEAMMAXSIZE` | 8 | Maksimum ekip (team) boyutu. (0 = takımlar tamamen kapalı, 3-4 = küçük grup sunucuları) |
 | `SERVER_ITEMDESPAWN` | 180 | Yere atılan eşyaların kaybolma süresi. (sn) |
 | `SERVER_BRANCH` | "public" | Rust sunucu sürümü dalı. (Staging vb. için değiştirilebilir) |
 
@@ -383,9 +396,17 @@ Firewall tarafında her port ayrı ayrı kontrol edilir:
 - Oyun portu: `SERVER_PORT` / UDP
 - RCON portu: `RCON_PORT` / TCP
 - Rust+ açıksa: `APP_PORT` / TCP
-- Tanımlıysa Steam sorgu portu: `SERVER_QUERYPORT` / UDP
+- Sorgu portu (Queryport): `SERVER_QUERYPORT` / UDP (boşsa otomatik hesaplanır: en büyük port + 1)
 
 Bir firewall kuralı eklenemezse script artık sessizce kapanmak yerine hangi portta hata olduğunu gösterir. Bu durumda scripti **Yönetici olarak** çalıştırın ve Windows Defender Firewall servisinin açık olduğundan emin olun. 🛡️
+
+### Sunucu tarayıcı listesinde görünmüyorsa
+
+Şubat 2023 ağ güncellemesinden itibaren Rust, sunucunun listede görünmesi için **sorgu portu (queryport)** zorunlu tutuyor:
+
+- `SERVER_QUERYPORT` boşsa script bunu otomatik hesaplar (varsayılan kurulumda **28017**) ve hem `+server.queryport` parametresini hem de UDP firewall kuralını ekler.
+- Queryport, oyun portuyla **aynı olamaz** ve UDP olarak dışarıya açık olmalıdır.
+- Sunucunuz hâlâ listede çıkmıyorsa router'ınızda da UDP 28017 port yönlendirmesini yapın.
 
 ### `'Vanilla+' is not recognized` hatası
 
@@ -450,6 +471,7 @@ Script Windows Server 2022 Standard işletim sisteminde çalışacağı için bu
 
 ## 🔄 Versiyon Geçmişi
 
+- **v1.4.12:** Rust'ın güncel (2026) sürümüne göre kapsamlı convar senkronizasyonu yapıldı: `wolf.population` → `wolf2.population` (Wolves2 güncellemesi), `heli.bulletdamage` → `heli.bulletdamagescale`, `cargoship.loot_spacing_minutes` → `cargoship.loot_round_spacing_minutes`, `+server.fps` → `+fps.limit` geçildi ve vanilla'dan kaldırılan `craft.instant` isteğe bağlı hale getirildi. Queryport artık boş bırakılırsa otomatik hesaplanıyor (en büyük port + 1) ve UDP firewall kuralıyla birlikte gönderiliyor; böylece sunucunun listede görünmemesi sorunu giderildi. Yeni ayarlar eklendi: `SERVER_LOGOIMAGE`, `SERVER_RADIATION`, `SERVER_TEAMMAXSIZE` (ekip boyutu), `NPCS_ENABLED` (`ai.npc_enable`), `AI_MOVE`/`AI_THINK`, kutup ayısı/kaplan/panter/timsah/yılan popülasyonları ve Eylül 2026 "Breach and Clear" güncellemesinin grup bakım vergisi anahtarı (`DECAY_UPKEEP_GROUP_SCALING`). Geçersiz `patrolhelicopter.max` convar'ı kaldırıldı. Minimum RAM gereksinimi Facepunch wiki'ye göre 12 GB olarak güncellendi. Windows Server 2022 uyumluluğu korundu.
 - **v1.4.11:** README.md, AGENTS.md kurallarına göre güncellendi; "Proje Kuralları" bölümü AGENTS.md ile hizalandı ve BAT–README versiyon senkronu (1.4.11) sağlandı. Script mantığında değişiklik yoktur.
 - **v1.4.10:** uMod/Oxide kurulumundaki powershell satırında bulunan "!" ünlem işaretlerinin gecikmeli değişken genişletme (DelayedExpansion) tarafından yutulmasıyla oluşan "Missing closing ')' in expression" syntax hatası çözüldü. Script Windows Server 2022 uyumluluğu korundu.
 - **v1.4.9:** Otomatik uMod (Oxide) kurulumu özelliği güncellendi. Artık konsolda en son yayımlanan 5 Windows sürüm (v2.0.7283 vb.) seçeneği listeleniyor ve seçilen sürüm yükleniyor. Gereksiz test dosyaları silindi. Script Windows Server 2022 uyumluluğuna sahiptir.
