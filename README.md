@@ -1,6 +1,6 @@
 ﻿# 🎮 fg-RustServerStart.BAT - Tam Otomatik Rust Sunucu Scripti
 
-[![Version](https://img.shields.io/badge/version-1.4.12-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/feyioz/fg-RustServerStartBat)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -220,6 +220,8 @@ Tags, Rust sunucu tarayıcısında oyuncuların sunucunuzu bulmasını sağlayan
 | `PANTHER_POPULATION` | 0.5 | Panter sayısı. (Jungle biyomu, km² başına) |
 | `CROCODILE_POPULATION` | 1 | Timsah sayısı. (Jungle/bataklık, km² başına) |
 | `SNAKEHAZARD_POPULATION` | 5 | Yılan sayısı. (Jungle bitki örtüsü, km² başına) |
+| `COW_POPULATION` | "" | İnek sayısı. (Ekim 2026 "Livestock" güncellemesi, km² başına. Boş = vanilla) |
+| `SHEEP_POPULATION` | "" | Koyun sayısı. (Ekim 2026 "Livestock" güncellemesi, km² başına. Boş = vanilla) |
 | `NPCS_ENABLED` | 1 | NPC (bilim insanı vb.) spawning'in ana anahtarı. (0 = hiçbir NPC spawn olmaz) |
 | `AI_TICKRATE` | 5 | NPC düşünme/hareket etme hızı. |
 | `AI_IGNOREPLAYERS` | 0 | 1 yapılırsa hayvanlar ve NPC'ler oyunculara saldırmaz. |
@@ -256,6 +258,8 @@ Tags, Rust sunucu tarayıcısında oyuncuların sunucunuzu bulmasını sağlayan
 | `SERVER_DIR` | "%~dp0server" | Rust Server kurulum klasörü. |
 | `LOG_DIR` | "%~dp0logs" | Çökme (Crash) loglarının kaydedileceği klasör. |
 | `AUTO_UPDATE` | 1 | Her açılışta SteamCMD üzerinden Rust güncellemesini kontrol eder. |
+| `STEAMCMD_VALIDATE` | 1 | 1 = güncellemede dosya doğrulaması yapılır (güvenli, yavaş). 0 = `validate` atlanır (açılış hızlanır, bozuk dosyalar onarılmaz). |
+| `LOG_RETENTION_DAYS` | 14 | Bu günden eski `server_*.log` dosyaları her başlatmada otomatik silinir. (0 = temizlik kapalı) |
 | `ENABLE_UMOD` | 0 | 1 yapılırsa Oxide (uMod) eklenti sistemini otomatik kurar ve günceller. |
 
 <details>
@@ -311,6 +315,7 @@ set "LOG_DIR=D:\Sunucular\Rust_Loglari"
 | `CRASH_RESTART` | 1 | Sunucu beklenmedik şekilde çökerse otomatik yeniden başlatmayı açar. |
 | `CRASH_WAIT_SECONDS` | 30 | Çöktükten sonra yeniden başlatmak için beklenecek süre. (sn) |
 | `MAX_CRASH_RESTARTS` | 5 | Sonsuz döngüyü önlemek için maksimum ardışık yeniden başlatma denemesi. |
+| `CRASH_RESET_UPTIME_SECONDS` | 300 | Sunucu bu süre boyunca kesintisiz ayakta kaldıysa crash sayacı sıfırlanır. Böylece uzun süre sağlıklı çalışan bir sunucu, seyrek çökmelerde yeniden başlatma hakkını kaybetmez. (sn) |
 
 ### 1.12 Yönetici & Yetki Ayarları
 | Parametre | Varsayılan Değer | Açıklama |
@@ -365,6 +370,34 @@ set "SERVER_MODERATORS=76561198000000003,76561198000000004"
 
 </details>
 
+### 1.13 Ekim 2026 "Livestock" Ayarları
+| Parametre | Varsayılan Değer | Açıklama |
+|-----------|------------------|----------|
+| `SERVER_OLD_NAVMESH` | 0 | 0 = yeni navmesh (Ekim 2026'dan itibaren varsayılan). 1 = başlatma parametresine `-useOldNavmesh` eklenir ve eski davranışa dönülür. |
+| `VEHICLE_PADREPAIRSREQUIRED` | 1 | Air Wolf helipad'inin onarım gerektirmesini kontrol eder. (0 = helipad onarım istemez) |
+| `VEHICLE_SETREPAIRABLEPADS` | "" | Helipad'i zorla bozuk (0) veya onarılmış (1) duruma alır. Boş = hiç yazılmaz, sunucu değeri korunur. |
+| `POWERGRID_FUSEDECAYLOWPOP` | 10 | Powergrid sigortası çürümesinin başladığı oyuncu sayısı eşiği. |
+| `POWERGRID_FUSEDECAYHIGHPOP` | 100 | Sigorta çürümesinin en yüksek hıza ulaştığı oyuncu sayısı. |
+| `POWERGRID_FUSEDECAYLOWPOPSCALE` | 4 | Düşük popülasyondaki çürüme hızı çarpanı. |
+| `SERVER_UPGRADE_KEEPS_HEALTH` | 1 | Yükseltilen yapıda mevcut hasar oranının korunmasını sağlar. (Vanilla davranışı) |
+
+> ℹ️ **Yeni navmesh ne getirdi?** Ekim 2026 güncellemesiyle NPC'ler oyuncu yapılarına girip kapıları kullanabiliyor. Bu davranıştan rahatsızsanız `SERVER_OLD_NAVMESH=1` yaparak eski navmesh'e dönebilirsiniz; ancak eski navmesh ileride kaldırılabilir.
+> ℹ️ **Popülasyon anahtarları (`COW_POPULATION`, `SHEEP_POPULATION`):** Boş bırakıldığında `server.cfg`'ye hiç yazılmaz ve vanilla değer geçerli olur. Güncel anahtar adlarını sunucu konsolunda `find livestock` komutuyla doğrulayabilirsiniz.
+> ⚠️ Bu anahtarlar yalnızca güncel Rust sürümünde desteklenir. Eski bir sunucu sürümü kullanıyorsanız ilgili satır hata mesajı üretmez, sadece yok sayılır.
+
+### 1.14 Test & Tanı Ayarları
+| Parametre | Varsayılan Değer | Açıklama |
+|-----------|------------------|----------|
+| `FG_DRY_RUN` | 0 | 1 = kuru çalıştırma modu. Yönetici izni, güç planı, dizin oluşturma, SteamCMD indirme/güncelleme, uMod kurulumu, firewall değişikliği ve sunucu başlatma adımları **atlanır**; üretilecek `server.cfg` içeriği ile başlatma parametreleri ekrana yazılır. Sistemde kalıcı hiçbir değişiklik yapılmaz. |
+
+**Kuru çalıştırma örneği:**
+
+```bat
+set "FG_DRY_RUN=1"
+```
+
+> 💡 Bu mod, yeni ayarları canlı sunucuya dokunmadan doğrulamak için idealdir. Testten sonra değeri tekrar `0` yapmayı unutmayın.
+
 ---
 
 ## ▶️ Çalıştırma
@@ -374,12 +407,13 @@ Projeyi başlatmak ve test etmek için:
 1. Klasördeki `fg-RustServerStart.BAT` dosyasına çift tıklayın.
 2. (Gerekirse) Ekrana gelen Yönetici İzni (UAC) uyarısına "Evet" deyin. Script güvenlik duvarı kurallarını eklemek için bu izne ihtiyaç duyar.
 3. Script sırasıyla;
-   - Gerekli klasörleri oluşturur,
+   - Gerekli klasörleri oluşturur ve `LOG_RETENTION_DAYS` süresinden eski logları temizler,
+   - Yapılandırma ön kontrollerini yapar (varsayılan RCON şifresi, boş `SERVER_OWNERS`, EAC kapalı uyarıları),
    - İşletim sistemini performans moduna (Windows Server 2022 vb. için Yüksek Performans) alır,
-   - SteamCMD'yi indirir ve kurar,
-   - Rust Dedicated Server dosyalarını indirir/günceller,
+   - SteamCMD'yi indirir ve kurar (3 denemeli, boyut doğrulamalı kurulum),
+   - Rust Dedicated Server dosyalarını indirir/günceller (`STEAMCMD_VALIDATE` ile doğrulama kontrolü),
    - (Açıksa) uMod'u indirip kurar,
-   - Güvenlik Duvarı portlarını (28015, 28016, 28082) açar,
+   - Güvenlik Duvarı portlarını (oyun, RCON, Rust+, queryport) açar,
    - `server.cfg` dosyasını yapılandırarak sunucuyu başlatır.
 4. Konsolda `Server startup complete` mesajını gördüğünüzde sunucunuz aktiftir! 😎
 
@@ -411,6 +445,22 @@ Bir firewall kuralı eklenemezse script artık sessizce kapanmak yerine hangi po
 ### `'Vanilla+' is not recognized` hatası
 
 Bu hata, sunucu adı/açıklaması/tag gibi başlatma parametrelerinde `|`, `&`, `!` gibi Windows CMD özel karakterleri geçtiğinde oluşur. v1.4.4 ile başlatma parametreleri güvenli biçimde hazırlanır ve `RustDedicated.exe` çalıştırılırken gecikmeli değişken genişletme kapatılır. Böylece `Vanilla+ | Monthly` gibi değerler komut olarak algılanmaz.
+
+### NPC'ler üsse giriyor / kapıları açıyor
+
+Ekim 2026 "Livestock" güncellemesiyle yeni navmesh varsayılan hale geldi ve NPC'ler oyuncu yapılarına girebiliyor, kapıları kullanabiliyor:
+
+- Bu davranışı kapatmak için `SERVER_OLD_NAVMESH=1` yapın (başlatma parametrelerine `-useOldNavmesh` eklenir).
+- Eski navmesh ileride kaldırılabilir; kalıcı çözüm için üs tasarımınızı (hava kilidi, kapı düzeni) buna göre düzenlemeniz önerilir.
+- Değişikliği canlı sunucuya dokunmadan denemek için `FG_DRY_RUN=1` ile kuru çalıştırma yapıp yazdırılan parametre listesini kontrol edebilirsiniz.
+
+### Ayarları riske atmadan test etmek istiyorsanız
+
+`FG_DRY_RUN=1` yapıp scripti çalıştırın. Script hiçbir kurulum, firewall veya sunucu işlemi yapmaz; yalnızca üretilecek `server.cfg` içeriğini ve `RustDedicated.exe` parametrelerini ekrana yazar. Böylece yeni convar'ların doğru yazıldığını canlı sunucuyu etkilemeden görebilirsiniz.
+
+### Loglar gereksiz yer kaplıyorsa
+
+`LOG_RETENTION_DAYS` değerini düşürün (örn. `7`). Bu süreden eski `server_*.log` dosyaları her başlatmada otomatik silinir. Tamamen kapatmak için `0` yazın.
 
 ---
 
@@ -471,6 +521,7 @@ Script Windows Server 2022 Standard işletim sisteminde çalışacağı için bu
 
 ## 🔄 Versiyon Geçmişi
 
+- **v1.5.0:** Ekim 2026 "Livestock" güncellemesiyle tam senkron sağlandı. Yeni navmesh artık varsayılan olduğu için eski `-useNewNavmesh` parametresi kaldırıldı; geri dönüş isteyenler için `SERVER_OLD_NAVMESH` (`-useOldNavmesh`) eklendi. Yeni convar'lar: `vehicle.padrepairsrequired`, `vehicle.setrepairablepads` (Air Wolf helipad onarımı), `powergrid.fusedecaylowpop`/`fusedecayhighpop`/`fusedecaylowpopscale` (sigorta çürümesi), `server.upgrade_keeps_health` ve isteğe bağlı `COW_POPULATION`/`SHEEP_POPULATION`. Optimizasyonlar: `wmic` bağımlılığı kaldırıldı (zaman damgası artık PowerShell ile alınır; eski sistemler için `wmic`, son çare olarak `%DATE%` yedeği), SteamCMD indirmesi 3 denemeli ve boyut doğrulamalı hale getirildi, `STEAMCMD_VALIDATE=0` ile her açılışta yapılan dosya doğrulaması atlanabiliyor, `LOG_RETENTION_DAYS` (varsayılan 14 gün) ile eski loglar otomatik temizleniyor, `CRASH_RESET_UPTIME_SECONDS` (varsayılan 300 sn) ile uzun süre sağlıklı çalışan sunucularda crash sayacı sıfırlanıyor, firewall kuralları `profile=any enable=yes` ile eklendi ve yapılandırma ön kontrol uyarıları (varsayılan RCON şifresi, boş `SERVER_OWNERS`, EAC kapalı) eklendi. Yeni `FG_DRY_RUN=1` kuru çalıştırma modu sayesinde sistemde hiçbir değişiklik yapmadan `server.cfg` ve başlatma parametreleri önizlenebiliyor. Ayrıca gecikmeli değişken genişletmesi nedeniyle konsol mesajlarındaki `!` karakterlerinin yutulması ve blok içindeki parantezli mesajların komut sanılması sorunları giderildi; tüm PowerShell çağrılarına `-NoProfile` eklendi. Windows Server 2022 uyumluluğu korundu.
 - **v1.4.12:** Rust'ın güncel (2026) sürümüne göre kapsamlı convar senkronizasyonu yapıldı: `wolf.population` → `wolf2.population` (Wolves2 güncellemesi), `heli.bulletdamage` → `heli.bulletdamagescale`, `cargoship.loot_spacing_minutes` → `cargoship.loot_round_spacing_minutes`, `+server.fps` → `+fps.limit` geçildi ve vanilla'dan kaldırılan `craft.instant` isteğe bağlı hale getirildi. Queryport artık boş bırakılırsa otomatik hesaplanıyor (en büyük port + 1) ve UDP firewall kuralıyla birlikte gönderiliyor; böylece sunucunun listede görünmemesi sorunu giderildi. Yeni ayarlar eklendi: `SERVER_LOGOIMAGE`, `SERVER_RADIATION`, `SERVER_TEAMMAXSIZE` (ekip boyutu), `NPCS_ENABLED` (`ai.npc_enable`), `AI_MOVE`/`AI_THINK`, kutup ayısı/kaplan/panter/timsah/yılan popülasyonları ve Eylül 2026 "Breach and Clear" güncellemesinin grup bakım vergisi anahtarı (`DECAY_UPKEEP_GROUP_SCALING`). Geçersiz `patrolhelicopter.max` convar'ı kaldırıldı. Minimum RAM gereksinimi Facepunch wiki'ye göre 12 GB olarak güncellendi. Windows Server 2022 uyumluluğu korundu.
 - **v1.4.11:** README.md, AGENTS.md kurallarına göre güncellendi; "Proje Kuralları" bölümü AGENTS.md ile hizalandı ve BAT–README versiyon senkronu (1.4.11) sağlandı. Script mantığında değişiklik yoktur.
 - **v1.4.10:** uMod/Oxide kurulumundaki powershell satırında bulunan "!" ünlem işaretlerinin gecikmeli değişken genişletme (DelayedExpansion) tarafından yutulmasıyla oluşan "Missing closing ')' in expression" syntax hatası çözüldü. Script Windows Server 2022 uyumluluğu korundu.
